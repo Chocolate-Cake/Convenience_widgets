@@ -120,6 +120,7 @@ def purge_non_alnum(my_str):
 class entry:
 	def __init__(self, arr):
 		self.rep = []
+		self.rep_show = []
 		self.name = arr[1]
 		self.webname = purge_non_alnum(self.name)
 		self.urlname = self.name.strip().replace("/", "").replace(" ", "-").lower()
@@ -135,22 +136,22 @@ class entry:
 
 		#About, Events, Recruitment, Contact, Tags
 		format = [
-			["<div id='" + self.webname + "_div' style='display:none;'>"],
-			["<font face = 'Verdana' size = '3'>"],
+			#["<div id='" + self.webname + "_div' style='display:none;'>"],
+			["<font face = 'Arial' size = '3'>"],
 			["<h1 style='background-color: #D6D6D6'>", self.name, "</h1>"],
 			["</font>"],
 			["<p>", handle_join(self.description), "</p>"],
-			["<font face = 'Verdana' size = '3'>"],
+			["<font face = 'Arial' size = '3'>"],
 			["<h1 style='background-color: #D6D6D6'>Events</h1>"],
 			["</font>"],
 			["<p>", handle_join(self.events), "</p>"],
-			["<font face = 'Verdana' size = '3'>"],
+			["<font face = 'Arial' size = '3'>"],
 			["<h1 style='background-color: #D6D6D6'>Recruitment</h1>"],
 			["</font>"],
 			["<p>", handle_join(self.recruiting), "</p>"],
 			["<p><b> Additional details about recruiting: </b></p>"],
 			["<p>" + self.recruiting_details + "</p>"],
-			["<font face = 'Verdana' size = '3'>"],
+			["<font face = 'Arial' size = '3'>"],
 			["<h1 style='background-color: #D6D6D6'>Contact</h1>"],
 			["</font>"],
 			["<p><b>Name: </b>", handle_join(self.rn), "<br>"],
@@ -160,12 +161,20 @@ class entry:
 			["</div>"]
 		]
 		concat = []
+		hidden_prefix = ["<div id='" + self.webname + "_div' style='display:none;'>"]
+		show_prefix = ["<div id='" + self.webname + "_div'>"]
+		
 		for thing in format:
 			concat.append(''.join(thing))
-		self.rep.append(''.join(concat))
+
+		self.rep.append(''.join(hidden_prefix) + ''.join(concat))
+		self.rep_show.append(''.join(show_prefix) + ''.join(concat))
 
 	def __repr__(self):
 		return "".join(self.rep)
+
+	def repr_show(self):
+		return "".join(self.rep_show)
 
 	def __str__(self):
 		return self.__repr__()
@@ -310,8 +319,8 @@ def make_category_pages(my_csv, skips, make_txt_files = False):
 				for j in i.list:
 					f.write(j.name)
 					f.write("\n")
-					f.write(j.__repr__())
-					exceptions += j.__repr__().count("EXCEPTION THROWN")
+					f.write(j.repr_show())
+					exceptions += j.repr_show().count("EXCEPTION THROWN")
 					f.write("\n\n\n\n\n")
 				f.close()
 		end_time = time.time()
@@ -366,7 +375,7 @@ def make_separate_category_dropdowns(categorize):
 		index += 1
 		
 
-def make_single_page_show_hide(categorize, target):
+def make_single_page_drop_downs(categorize, target):
 	format = []
 	format.append("<html><head><style>")
 	format.append("button { font-size: 100%; width:50%; height:10%; max-height:15%; margin: 10px;}")
@@ -425,14 +434,15 @@ def make_randomize_all(categorize, target):
 	f.write('\n'.join(format))
 
 
-
-cat = make_category_pages("responses_all.csv", 2)
 #cat = make_categories_from_url("https://docs.google.com/spreadsheets/d/1_YNkvj7wdj3kkmogLv2LO0RDTaRNgQJAA4om9tRuPoc/edit#gid=0", 2)
 #put_in_divs(cat, "web_stuff.html")
 #make_category_names_list(cat, "names_list.txt")
-#make_single_page_show_hide(cat, "web_stuff.html")
+#make_single_page_drop_downs(cat, "web_stuff.html")
 #make_separate_category_dropdowns(cat)
 
+#get category object & make txt files
+cat = make_category_pages("responses_all.csv", 2, True)
+#make page with randomized results
 make_randomize_all(cat, "web_stuff.html")
 
 
