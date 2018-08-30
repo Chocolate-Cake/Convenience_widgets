@@ -4,6 +4,10 @@ para_ovrd = "override_original"
 empty_ovrd = "override_empty"
 com_ovrd = "override_comma"
 hyp_ovrd = "override_hyphen"
+n_ovrd = "override_n"
+semi_ovrd = "override_semi"
+join_ovrd = "override_join"
+per_ovrd = "override_period"
 
 def handle_overrides(e):
 	if len(e) > 0:
@@ -16,6 +20,15 @@ def handle_overrides(e):
 			return e[len(com_ovrd)::].split(',')
 		elif first == hyp_ovrd:
 			return e[len(hyp_ovrd)::].split('-')
+		elif first == n_ovrd:
+			return e[len(n_ovrd)::].split('\n')
+		elif first == semi_ovrd:
+			return e[len(semi_ovrd)::].split(';')
+		elif first == per_ovrd:
+			return e[len(per_ovrd)::].split('.')
+		elif first == join_ovrd:
+			text = e[len(join_ovrd)::].split('\n')
+			return ''.join(text)
 	return None
 
 def clean_items(e, when_one = "EXCEPTION THROWN: clean_items encountered unknown format"):
@@ -37,18 +50,25 @@ def clean_items(e, when_one = "EXCEPTION THROWN: clean_items encountered unknown
 		return [e]
 
 def clean_social_media(sm):
-	try:
-		special = handle_overrides(sm)
-		if special is not None:
-			return special
+	special = handle_overrides(sm)
+	if special is not None:
+		return special
 
-		if len(sm) == 1 and sm[0].lower == "none":
-			return ["None"]
-		elif len(sm) > 0:
-			return clean_items(sm, when_one=sm)
-	except:
-		pass
-	return ["EXCEPTION THROWN: clean_social_media encountered unknown format"]
+	get_list = sm.split()
+	to_return = []
+	counter = 0
+	for word in get_list:
+		temp = word.strip(';').strip(',')
+		if ".com" in word or ".org" in word or "http" in word or "www." in word:
+			to_return.append("<a href='" + temp + "'>" + temp + "</a><br>")
+			counter += 1
+		else:
+			to_return.append(word)
+	
+	if counter == 0:
+		return sm
+	else:
+		return [' '.join(to_return)]
 
 def capitalize_first(line):
 	try:
@@ -136,7 +156,7 @@ class entry:
 
 		#About, Events, Recruitment, Contact, Tags
 		format = [
-			#["<div id='" + self.webname + "_div' style='display:none;'>"],
+			["<div id='" + self.webname + "_div' style='display:none;'>"],
 			["<font face = 'Arial' size = '3'>"],
 			["<h1 style='background-color: #D6D6D6'>", self.name, "</h1>"],
 			["</font>"],
@@ -161,14 +181,14 @@ class entry:
 			["</div>"]
 		]
 		concat = []
-		hidden_prefix = ["<div id='" + self.webname + "_div' style='display:none;'>"]
-		show_prefix = ["<div id='" + self.webname + "_div'>"]
+		#hidden_prefix = ["<div id='" + self.webname + "_div'>"]
+		#show_prefix = ["<div id='" + self.webname + "_div'>"]
 		
 		for thing in format:
 			concat.append(''.join(thing))
-
-		self.rep.append(''.join(hidden_prefix) + ''.join(concat))
-		self.rep_show.append(''.join(show_prefix) + ''.join(concat))
+		self.rep.append(''.join(concat))
+		#self.rep.append(''.join(hidden_prefix) + ''.join(concat))
+		#self.rep_show.append(''.join(show_prefix) + ''.join(concat))
 
 	def __repr__(self):
 		return "".join(self.rep)
@@ -319,8 +339,8 @@ def make_category_pages(my_csv, skips, make_txt_files = False):
 				for j in i.list:
 					f.write(j.name)
 					f.write("\n")
-					f.write(j.repr_show())
-					exceptions += j.repr_show().count("EXCEPTION THROWN")
+					f.write(j.__repr__())
+					exceptions += j.__repr__().count("EXCEPTION THROWN")
 					f.write("\n\n\n\n\n")
 				f.close()
 		end_time = time.time()
@@ -354,7 +374,7 @@ def make_separate_category_dropdowns(categorize):
 		for item in category.list:
 			format.append("<div style: 'text-align:center;'>")
 			format.append("<button id='" + item.webname + "_div_button' type='button' onclick='" + item.webname + "_div_func()'>")
-			format.append("(" + str(counter) + ".)  " + item.name)
+			format.append(item.name)
 			format.append("</button>")
 			format.append("<div>")
 			format.append(item.__repr__())
@@ -412,14 +432,16 @@ def make_randomize_all(categorize, target):
 	format.append("<html><head><style>")
 	format.append("button { font-size: 100%; width:50%; height:10%; max-height:15%; margin: 10px;}")
 	format.append("body { text-align: center;}")
-	format.append("p { font-size: 20px;}</style>")
+	format.append("p { font-size: 20px; text-align: left;}</style>")
 	format.append("<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>")
 	format.append("</head><body>")
 	for category in categorize:
 		for item in category.list:
 			format.append(item.__repr__())
 			total += 1
+	format.append("<center>")
 	format.append("<button type='button' onclick='get_random()'> Give me a random group </button>")
+	format.append("</center>")
 	format.append("<div id='randomized_div'></div>")
 	format.append("<script>")
 	format.append("function get_random() {")
@@ -438,15 +460,14 @@ def make_randomize_all(categorize, target):
 #put_in_divs(cat, "web_stuff.html")
 #make_category_names_list(cat, "names_list.txt")
 #make_single_page_drop_downs(cat, "web_stuff.html")
-#make_separate_category_dropdowns(cat)
+
 
 #get category object & make txt files
-cat = make_category_pages("responses_all.csv", 2, True)
+cat = make_category_pages("responses_all.csv", 0)
 #make page with randomized results
 make_randomize_all(cat, "web_stuff.html")
-
-
-
+#make pages with buttons that drop down, by category
+make_separate_category_dropdowns(cat)
 
 
 
