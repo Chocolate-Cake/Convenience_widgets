@@ -455,19 +455,49 @@ def make_randomize_all(categorize, target):
 	f = open(target, "w+")
 	f.write('\n'.join(format))
 
+def tables():
+	with open("numbers.csv", 'rt', encoding="utf8") as csvfile:
+			reader = csv.reader(csvfile)
+			format = []
+			f = open("num_tables.html", "w+")
+			format.append("<html><head>")
+			format.append("</head><table><tbody>")
+			for row in reader:
+				format.append("<tr>")
+				format.append("<td>")
+				format.append(row[0])
+				format.append("</td>")
+				format.append("<td>")
+				format.append(row[1])
+				format.append("</td>")
+				format.append("<td>")
+				format.append(row[2])
+				format.append("</td>")
+				format.append("</tr>")
+			format.append("</tbody></table>")
+			format.append("<style>")
+			format.append("td {width = 100px;}")
+			format.append("</style>")
+			format.append("</html>")
+			
+
+	f.write(''.join(format))
 
 #cat = make_categories_from_url("https://docs.google.com/spreadsheets/d/1_YNkvj7wdj3kkmogLv2LO0RDTaRNgQJAA4om9tRuPoc/edit#gid=0", 2)
 #put_in_divs(cat, "web_stuff.html")
 #make_category_names_list(cat, "names_list.txt")
 #make_single_page_drop_downs(cat, "web_stuff.html")
 
-
+'''
 #get category object & make txt files
-cat = make_category_pages("responses_all.csv", 0)
+cat = make_category_pages("responses_all.csv", 0, True)
 #make page with randomized results
 make_randomize_all(cat, "web_stuff.html")
 #make pages with buttons that drop down, by category
 make_separate_category_dropdowns(cat)
+'''
+
+tables()
 
 
 
